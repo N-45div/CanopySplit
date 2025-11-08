@@ -1,0 +1,112 @@
+[
+	{
+		"type": "function",
+		"name": "createStrategy",
+		"inputs": [
+			{ "name": "_name", "type": "string", "internalType": "string" },
+			{ "name": "_management", "type": "address", "internalType": "address" },
+			{ "name": "_keeper", "type": "address", "internalType": "address" },
+			{ "name": "_emergencyAdmin", "type": "address", "internalType": "address" },
+			{ "name": "_donationAddress", "type": "address", "internalType": "address" },
+			{ "name": "_enableBurning", "type": "bool", "internalType": "bool" },
+			{
+				"name": "_tokenizedStrategyAddress",
+				"type": "address",
+				"internalType": "address"
+			}
+		],
+		"outputs": [{ "name": "strategyAddress", "type": "address", "internalType": "address" }],
+		"stateMutability": "nonpayable"
+	},
+	{
+		"type": "function",
+		"name": "getStrategiesByDeployer",
+		"inputs": [{ "name": "deployer", "type": "address", "internalType": "address" }],
+		"outputs": [
+			{
+				"name": "",
+				"type": "tuple[]",
+				"internalType": "struct BaseStrategyFactory.StrategyInfo[]",
+				"components": [
+					{ "name": "deployerAddress", "type": "address", "internalType": "address" },
+					{ "name": "timestamp", "type": "uint256", "internalType": "uint256" },
+					{ "name": "vaultTokenName", "type": "string", "internalType": "string" },
+					{ "name": "donationAddress", "type": "address", "internalType": "address" }
+				]
+			}
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "predictStrategyAddress",
+		"inputs": [
+			{ "name": "_parameterHash", "type": "bytes32", "internalType": "bytes32" },
+			{ "name": "deployer", "type": "address", "internalType": "address" },
+			{ "name": "bytecode", "type": "bytes", "internalType": "bytes" }
+		],
+		"outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+		"stateMutability": "view"
+	},
+	{
+		"type": "function",
+		"name": "strategies",
+		"inputs": [
+			{ "name": "", "type": "address", "internalType": "address" },
+			{ "name": "", "type": "uint256", "internalType": "uint256" }
+		],
+		"outputs": [
+			{ "name": "deployerAddress", "type": "address", "internalType": "address" },
+			{ "name": "timestamp", "type": "uint256", "internalType": "uint256" },
+			{ "name": "vaultTokenName", "type": "string", "internalType": "string" },
+			{ "name": "donationAddress", "type": "address", "internalType": "address" }
+		],
+		"stateMutability": "view"
+	},
+	{
+		"type": "event",
+		"name": "StrategyDeploy",
+		"inputs": [
+			{
+				"name": "deployer",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "donationAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "strategyAddress",
+				"type": "address",
+				"indexed": true,
+				"internalType": "address"
+			},
+			{
+				"name": "vaultTokenName",
+				"type": "string",
+				"indexed": false,
+				"internalType": "string"
+			}
+		],
+		"anonymous": false
+	},
+	{ "type": "error", "name": "Create2EmptyBytecode", "inputs": [] },
+	{ "type": "error", "name": "FailedDeployment", "inputs": [] },
+	{
+		"type": "error",
+		"name": "InsufficientBalance",
+		"inputs": [
+			{ "name": "balance", "type": "uint256", "internalType": "uint256" },
+			{ "name": "needed", "type": "uint256", "internalType": "uint256" }
+		]
+	},
+	{
+		"type": "error",
+		"name": "StrategyAlreadyExists",
+		"inputs": [{ "name": "existingStrategy", "type": "address", "internalType": "address" }]
+	}
+]

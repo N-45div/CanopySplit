@@ -1,0 +1,4 @@
+[submodule "dependencies/octant-v2-core"]
+	path = dependencies/octant-v2-core
+	url = https://github.com/golemfoundation/octant-v2-core
+	branch = develop
