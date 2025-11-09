@@ -1,0 +1,29 @@
+{
+  "name": "@aave/aave-vault",
+  "license": "All Rights Reserved © AaveCo",
+  "version": "1.0.0",
+  "author": "AaveCo",
+  "description": "ERC-4626 vault for depositing & withdrawing into Aave V3",
+  "files": [
+    "contracts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aave/wrapped-atoken-vault"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.13"
+  },
+  "contributors": [
+    "Miguel Martinez <miguel@aave.com>",
+    "Peter Michael <peter.dev@aave.com>",
+    "Mark Hinschberger <mark@aave.com>"
+  ],
+  "scripts": {
+    "lint": "prettier --write **.sol",
+    "rs:bind": "forge bind --bindings-path ./out/__BINDINGS__ --alloy --skip 'test/**/*.sol'",
+    "rs:abis": "forge build --out ./out/__FOLDER_ABIS__ --skip 'test/**/*.sol' --extra-output-files abi && rm -rf ./out/__ABIS__ && mkdir -p ./out/__ABIS__ && find ./out/__FOLDER_ABIS__ -name '*.abi.json' -exec cp {} ./out/__ABIS__/ \\;",
+    "rs:generate": "npm run rs:bind && npm run rs:abis"
+  }
+}

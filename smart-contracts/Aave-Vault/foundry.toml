@@ -1,0 +1,32 @@
+[profile.default]
+solc = "0.8.22"
+bytecode_hash = "none"
+optimizer = true
+optimizer-runs = 30_000
+via_ir = false
+runs = 256
+gas_reports = ["ATokenVault"]
+isolate = true
+ignored_warnings_from = ["lib/", "node_modules/"] # Ignore warnings from dependencies
+remappings = [
+  "@aave-v3-core/=lib/aave-v3-core/contracts/",
+  "@aave-v3-periphery/=lib/aave-v3-periphery/contracts/",
+  "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+  "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+  "forge-std/=lib/openzeppelin-contracts-upgradeable/lib/forge-std/src/"
+]
+
+[fuzz]
+max_test_rejects = 65536
+runs = 256
+
+[profile.intense.fuzz]
+runs = 10000
+
+[rpc_endpoints]
+mumbai = "${MUMBAI_RPC_URL}"
+polygon = "${POLYGON_RPC_URL}"
+
+[etherscan]
+mumbai = { key = "${ETHERSCAN_API_KEY}" }
+polygon = { key = "${ETHERSCAN_API_KEY}" }
