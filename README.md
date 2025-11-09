@@ -1,6 +1,6 @@
 # CanopySplit
 
-Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets you deposit an ERC-20 ASSET (e.g., USDC) into yield-generating strategies and automatically splits the profits among climate impact recipients.
+Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets you deposit an ERC-20 ASSET (e.g., WETH) into yield-generating strategies and automatically splits the profits among climate impact recipients.
 
 ## What it does
 
@@ -13,9 +13,9 @@ Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets
 ## Live on Sepolia
 
 **Main Contracts**
-- Aave Strategy: `0x99D8C89E43AA7Cf4628D6F496Ba749D077f78A8B`
-- Splitter: `0xe1F4d6b65e37282D5E1d9e5e9bbd3b0F27683eea`
-- Asset (USDC on Sepolia): `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
+- Aave Strategy: `0x0D1d8AE2dD0e4B06ca0Ef2949150eb021cAf6Ce9`
+- Splitter: `0xda5fA1c26Ec29497C2B103B385569286B30EC248`
+- Asset (WETH on Sepolia): `0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c`
 
 **Climate Recipients**
 - Planters: `0xF9b2eFCAcc1B93c1bd7F898d0a8c4b34aBD78E53` (50%)
@@ -148,17 +148,6 @@ For deployment, copy `.env.example` to `.env` and configure your keys.
 - BeforeSwap/AfterSwap hooks with delta returns
 - Configurable donation percentage per pool
 - Full test coverage with local deployment scripts
-
-## Prize Positioning
-
-This project targets:
-- ✅ **Best use of Yield Donating Strategy** - Full Octant v2 implementation with multiple adapters
-- ✅ **Best Public Goods Project** - Climate impact with transparent allocation
-- ✅ **Best Code Quality** - Comprehensive tests, clean architecture, documentation
-- ✅ **Best use of Aave v3** - ERC-4626 vault integration with safety checks
-- ✅ **Best Use of Uniswap v4 Hooks** - Novel fee donation mechanism
-- ✅ **Most creative use of Octant v2** - Epoch-based splits + UI innovation
-- ✅ **Best Tutorial** - Clear docs, video demos, runnable examples
 
 ## License
 
