@@ -481,14 +481,6 @@ admin.transferOwnership(address(0))  # Disallowed by OpenZeppelin
 4. **Dynamic asset detection** - Read `asset()` and `decimals()` from contracts, never hardcode
 5. **One splitter per strategy** - Avoid "vault already set" by deploying fresh splitters
 
-# Local Testing of Uniswap V4 hook
-
-Start a local Anvil node (port 8545) and keep it running in a separate terminal:
-
-```bash
-anvil --port 8545
-```
-
 ## License
 
 MIT
