@@ -148,3 +148,18 @@
     font-size: 0.9em;
   }
 }
+
+/* Ensure RainbowKit modals are above everything and clickable */
+[data-rk] {
+  z-index: 9999 !important;
+}
+
+div[role="dialog"][data-rk] {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure modal backdrop doesn't block interactions */
+div[data-rk] > div {
+  pointer-events: auto !important;
+}

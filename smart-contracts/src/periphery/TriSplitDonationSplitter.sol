@@ -139,6 +139,25 @@ contract TriSplitDonationSplitter is Ownable {
         return (shares, assetsReceived);
     }
 
+    /// @notice Split the splitter's current asset balance by epoch weights (without redeeming shares).
+    function distributeRaw() external returns (uint256 assetsOut) {
+        require(address(asset) != address(0), "asset not set");
+        Weights memory w = epochWeights[currentEpoch];
+        uint256 assetsReceived = asset.balanceOf(address(this));
+        if (assetsReceived == 0) return 0;
+
+        uint256 a0 = (assetsReceived * w.bps[0]) / 10_000;
+        uint256 a1 = (assetsReceived * w.bps[1]) / 10_000;
+        uint256 a2 = assetsReceived - a0 - a1;
+
+        if (a0 > 0) asset.safeTransfer(w.recipients[0], a0);
+        if (a1 > 0) asset.safeTransfer(w.recipients[1], a1);
+        if (a2 > 0) asset.safeTransfer(w.recipients[2], a2);
+
+        emit Distributed(currentEpoch, 0, assetsReceived);
+        return assetsReceived;
+    }
+
     /// @notice Rescue any ERC20 mistakenly sent.
     function sweep(address token, address to, uint256 amount) external onlyOwner {
         IERC20(token).safeTransfer(to, amount);

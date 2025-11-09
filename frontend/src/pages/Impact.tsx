@@ -5,6 +5,7 @@ import { useReadContract } from 'wagmi';
 import SplitterABI from '@/abis/TriSplitDonationSplitter.json';
 import StrategyABI from '@/abis/YieldDonatingTokenizedStrategy.json';
 import { formatUnits } from 'viem';
+import ERC20ABI from '@/abis/ERC20.json';
 
 export default function ImpactPage() {
   const splitterAddr = ADDRS.sepolia.splitter as `0x${string}`;
@@ -16,10 +17,17 @@ export default function ImpactPage() {
   const epoch = (currentEpoch ?? 0n) as bigint;
   const { data: epochWeights } = useReadContract({ address: splitterAddr, abi: SplitterABI as any, functionName: 'getEpochWeights', args: [epoch] });
 
-  const estPendingUSDC = (() => {
+  // Asset metadata
+  const { data: assetAddress } = useReadContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'asset', args: [] });
+  const { data: assetDecimals } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'decimals', args: [] });
+  const { data: assetSymbol } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'symbol', args: [] });
+  const dec = typeof assetDecimals === 'number' ? assetDecimals : 18;
+  const symbol = (assetSymbol as string) || 'ASSET';
+
+  const estPending = (() => {
     if (!pendingShares || !pps) return '0';
     const pv = (pendingShares as bigint) * (pps as bigint) / 10n**18n;
-    return formatUnits(pv, 6);
+    return formatUnits(pv, dec);
   })();
 
   return (
@@ -32,8 +40,8 @@ export default function ImpactPage() {
       <section className="grid gap-6 md:grid-cols-3">
         <Card className="p-8 text-center">
           <div className="text-sm text-slate-500">Ready to Donate (est.)</div>
-          <div className="mt-1 text-3xl font-semibold">{estPendingUSDC}</div>
-          <div className="text-xs text-slate-500">USDC</div>
+          <div className="mt-1 text-3xl font-semibold">{estPending}</div>
+          <div className="text-xs text-slate-500">{symbol}</div>
         </Card>
         <Card className="p-8 text-center">
           <div className="text-sm text-slate-500">Current Epoch</div>
@@ -42,7 +50,7 @@ export default function ImpactPage() {
         </Card>
         <Card className="p-8 text-center">
           <div className="text-sm text-slate-500">Donation Token</div>
-          <div className="mt-1 text-3xl font-semibold">USDC</div>
+          <div className="mt-1 text-3xl font-semibold">{symbol}</div>
           <div className="text-xs text-slate-500">Sepolia</div>
         </Card>
       </section>

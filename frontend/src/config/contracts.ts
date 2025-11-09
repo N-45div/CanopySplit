@@ -1,7 +1,9 @@
 export const ADDRS = {
   sepolia: {
-    usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
-    strategy: '0x99D8C89E43AA7Cf4628D6F496Ba749D077f78A8B',
-    splitter: '0xe1F4d6b65e37282D5E1d9e5e9bbd3b0F27683eea',
+    usdc: '0xC558DBdd856501FCd9aaF1E62eae57A9F0629a3c',
+    strategy: '0x0D1d8AE2dD0e4B06ca0Ef2949150eb021cAf6Ce9',
+    splitter: '0xda5fA1c26Ec29497C2B103B385569286B30EC248',
+    aavePool: '0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951',
+    aToken: '0x6938238e57CBe1b4B51Eb3B51389cEf8d3a88521',
   },
 } as const;

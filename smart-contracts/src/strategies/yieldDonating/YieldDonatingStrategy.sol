@@ -82,7 +82,7 @@ contract YieldDonatingStrategy is BaseStrategy {
      * @param _amount The amount of 'asset' that the strategy can attempt
      * to deploy.
      */
-    function _deployFunds(uint256 _amount) internal override {
+    function _deployFunds(uint256 _amount) internal virtual override {
         // Idle variant: keep assets held by the strategy (no external deployment).
         // This enables clean demo semantics on testnet while preserving ERC-4626 behavior.
         // No action required.
@@ -109,7 +109,7 @@ contract YieldDonatingStrategy is BaseStrategy {
      *
      * @param _amount, The amount of 'asset' to be freed.
      */
-    function _freeFunds(uint256 _amount) internal override {
+    function _freeFunds(uint256 _amount) internal virtual override {
         // Idle variant: funds are already idle in the strategy contract.
         // No action required.
     }
@@ -136,7 +136,7 @@ contract YieldDonatingStrategy is BaseStrategy {
      * @return _totalAssets A trusted and accurate account for the total
      * amount of 'asset' the strategy currently holds including idle funds.
      */
-    function _harvestAndReport() internal override returns (uint256 _totalAssets) {
+    function _harvestAndReport() internal virtual override returns (uint256 _totalAssets) {
         // Idle variant: total assets are simply the ERC20 balance held by the strategy.
         _totalAssets = asset.balanceOf(address(this));
     }

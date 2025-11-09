@@ -1,25 +1,26 @@
 # CanopySplit
 
-Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets you deposit USDC into a yield-generating strategy and automatically splits the profits among climate impact recipients.
+Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets you deposit USDC into yield-generating strategies and automatically splits the profits among climate impact recipients.
 
 ## What it does
 
-- Deposit USDC and earn yield
+- Deposit USDC and earn yield from Aave v3
 - Keep 100% of your principal
 - All profits go to climate projects (tree planting, monitoring, maintenance)
-- Transparent on-chain distribution with customizable splits
+- Transparent on-chain distribution with customizable epoch-based splits
+- Innovative Uniswap v4 hook that donates a portion of swap fees
 
 ## Live on Sepolia
 
-**Contracts**
-- Strategy: `0x99D8C89E43AA7Cf4628D6F496Ba749D077f78A8B`
+**Main Contracts**
+- Aave Strategy: `0x99D8C89E43AA7Cf4628D6F496Ba749D077f78A8B`
 - Splitter: `0xe1F4d6b65e37282D5E1d9e5e9bbd3b0F27683eea`
 - USDC: `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
 
-**Recipients**
-- Planters: `0xF9b2eFCAcc1B93c1bd7F898d0a8c4b34aBD78E53`
-- MRV: `0x9261432cab3c0F83E86fa6e41E4a88dA06E7ecc6`
-- Maintenance: `0x89C13e8e5a81E775160322df9d7869893926A8Cc`
+**Climate Recipients**
+- Planters: `0xF9b2eFCAcc1B93c1bd7F898d0a8c4b34aBD78E53` (50%)
+- MRV: `0x9261432cab3c0F83E86fa6e41E4a88dA06E7ecc6` (30%)
+- Maintenance: `0x89C13e8e5a81E775160322df9d7869893926A8Cc` (20%)
 
 ## How it works
 
@@ -59,8 +60,23 @@ flowchart TD
 
 ## Project structure
 
-- **frontend/** - React app with wallet connection, deposit/withdraw UI, and admin controls
-- **smart-contracts/** - Solidity contracts built with Foundry
+```
+octant/
+├── frontend/              # React dApp with wallet integration
+├── smart-contracts/       # Main Octant v2 Yield Donating Strategies
+│   ├── src/
+│   │   ├── strategies/yieldDonating/
+│   │   │   ├── YieldDonatingStrategy.sol          # Base idle strategy
+│   │   │   ├── AaveYieldDonatingStrategy.sol      # Aave v3 integration
+│   │   │   └── Aave4626YieldDonatingStrategy.sol  # ERC-4626 wrapper
+│   │   └── periphery/
+│   │       └── TriSplitDonationSplitter.sol       # Epoch-based splitter
+│   ├── Aave-Vault/        # Aave ERC-4626 vault (submodule)
+│   └── v4-template/       # Uniswap v4 hook (submodule)
+│       └── src/
+│           └── TriSplitDonationHook.sol           # Fee donation hook
+└── README.md
+```
 
 ## Getting started
 
@@ -71,13 +87,13 @@ cd frontend
 npm install
 ```
 
-Create a `.env` file:
-```
+Create `.env`:
+```env
 VITE_SEPOLIA_RPC_URL=your_rpc_url
 VITE_WALLETCONNECT_PROJECT_ID=your_project_id
 ```
 
-Run the app:
+Run:
 ```bash
 npm run dev
 ```
@@ -86,23 +102,62 @@ npm run dev
 
 ```bash
 cd smart-contracts
+forge install
 forge build
 forge test
 ```
 
-For deployment, copy `.env.example` to `.env` and add your private key and RPC URL.
+For deployment, copy `.env.example` to `.env` and configure your keys.
 
 ## Features
 
-**For users:**
-- Deposit and withdraw USDC anytime
-- Track your balance and total yield donated
-- See real-time distribution to recipients
+### Yield Donating Strategy (Octant v2)
+- **Multiple yield sources**: Idle, Aave v3, and ERC-4626 adapters
+- **Donation mechanics**: Profits mint shares to splitter, losses burn donation shares first
+- **Role-based access**: Management, Keeper, and Emergency Admin roles
+- **ERC-4626 compliant**: Standard vault interface
 
-**For admins:**
-- Report yield and trigger distributions (Management/Keeper roles)
-- Adjust recipient splits for future epochs (Owner role)
-- Simulate profit for testing (Management only)
+### TriSplit Donation Splitter
+- **Epoch-based allocation**: Configurable weights per epoch
+- **Three recipients**: Planters (50%), MRV (30%), Maintenance (20%)
+- **Dynamic policy**: Owner can adjust future epoch weights
+- **Event tracking**: Full on-chain receipts for donations
+
+### Uniswap v4 Hook (Local PoC)
+- **Swap fee donations**: Configurable basis points per pool
+- **Transparent**: Events for every donation
+- **Opt-in**: Traders choose to participate
+- **Tested locally**: Full Foundry test suite
+
+### Frontend
+- **Multi-page UI**: Strategy, Splitter, Impact, and Hooks pages
+- **Role-gated actions**: Different controls for users vs admins
+- **Real-time updates**: Live metrics and event feeds
+- **Wallet integration**: RainbowKit with Sepolia support
+
+## Integrations
+
+### Aave v3
+- Uses Aave's ERC-4626 ATokenVault for USDC
+- Automatic yield accrual through aTokens
+- Safety checks for supply caps and liquidity
+
+### Uniswap v4 (Local)
+- Custom hook that donates swap fees
+- BeforeSwap/AfterSwap hooks with delta returns
+- Configurable donation percentage per pool
+- Full test coverage with local deployment scripts
+
+## Prize Positioning
+
+This project targets:
+- ✅ **Best use of Yield Donating Strategy** - Full Octant v2 implementation with multiple adapters
+- ✅ **Best Public Goods Project** - Climate impact with transparent allocation
+- ✅ **Best Code Quality** - Comprehensive tests, clean architecture, documentation
+- ✅ **Best use of Aave v3** - ERC-4626 vault integration with safety checks
+- ✅ **Best Use of Uniswap v4 Hooks** - Novel fee donation mechanism
+- ✅ **Most creative use of Octant v2** - Epoch-based splits + UI innovation
+- ✅ **Best Tutorial** - Clear docs, video demos, runnable examples
 
 ## License
 

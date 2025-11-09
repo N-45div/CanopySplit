@@ -8,6 +8,7 @@ import StrategyABI from '@/abis/YieldDonatingTokenizedStrategy.json';
 import SplitterABI from '@/abis/TriSplitDonationSplitter.json';
 import { ADDRS } from '@/config/contracts';
 import { formatUnits } from 'viem';
+import ERC20ABI from '@/abis/ERC20.json';
 import useCountUp from '@/lib/useCountUp';
 
 export default function Landing() {
@@ -39,13 +40,20 @@ export default function Landing() {
     args: [],
   });
 
-  const estPendingUSDCNum = (() => {
+  // Asset metadata
+  const { data: assetAddress } = useReadContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'asset', args: [] });
+  const { data: assetDecimals } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'decimals', args: [] });
+  const { data: assetSymbol } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'symbol', args: [] });
+  const dec = typeof assetDecimals === 'number' ? assetDecimals : 18;
+  const symbol = (assetSymbol as string) || 'ASSET';
+
+  const estPendingNum = (() => {
     if (!pendingShares || !pps) return undefined;
     const pv = (pendingShares as bigint) * (pps as bigint) / 10n**18n;
-    return Number(formatUnits(pv, 6));
+    return Number(formatUnits(pv, dec));
   })();
-  const totalAssetsNum = totalAssets ? Number(formatUnits(totalAssets as bigint, 6)) : undefined;
-  const caPending = useCountUp(estPendingUSDCNum ?? 0);
+  const totalAssetsNum = totalAssets ? Number(formatUnits(totalAssets as bigint, dec)) : undefined;
+  const caPending = useCountUp(estPendingNum ?? 0);
   const caTotal = useCountUp(totalAssetsNum ?? 0);
 
   return (
@@ -55,7 +63,7 @@ export default function Landing() {
         <div className="mx-auto max-w-3xl">
           <span className="rounded-full border px-3 py-1 text-xs text-slate-600">Sepolia • Public Goods</span>
           <h1 className="mt-6 text-5xl font-extrabold tracking-tight md:text-6xl">Redirect your yield to public goods</h1>
-          <p className="mt-4 text-slate-600 md:text-lg">Keep your principal. Let profits fund impact through transparent, on‑chain splits.</p>
+          <p className="mt-4 text-slate-600 md:text-lg">Keep your principal. Let {symbol} profits fund impact through transparent, on‑chain splits.</p>
           <div className="mt-8 flex items-center justify-center gap-3">
             <Link to="/app#strategy"><Button size="lg">Deposit to grow shade</Button></Link>
             <Link to="/app#splitter"><Button size="lg" variant="outline">View Splitter</Button></Link>
@@ -77,22 +85,22 @@ export default function Landing() {
                 caTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })
               )}
             </div>
-            <div className="text-xs text-slate-500">USDC</div>
+            <div className="text-xs text-slate-500">{symbol}</div>
           </Card>
           <Card className="p-6 text-center">
             <div className="text-sm text-slate-500">Pending donation (est.)</div>
             <div className="mt-1 text-3xl font-semibold">
-              {estPendingUSDCNum === undefined ? (
+              {estPendingNum === undefined ? (
                 <Skeleton className="mx-auto h-8 w-32" />
               ) : (
                 caPending.toLocaleString(undefined, { maximumFractionDigits: 2 })
               )}
             </div>
-            <div className="text-xs text-slate-500">USDC</div>
+            <div className="text-xs text-slate-500">{symbol}</div>
           </Card>
           <Card className="p-6 text-center">
             <div className="text-sm text-slate-500">Trees funded (est.)</div>
-            <div className="mt-1 text-3xl font-semibold">{estPendingUSDCNum === undefined ? '...' : Math.floor((estPendingUSDCNum || 0) / 1.5)}</div>
+            <div className="mt-1 text-3xl font-semibold">{estPendingNum === undefined ? '...' : Math.floor((estPendingNum || 0) / 1.5)}</div>
             <div className="text-xs text-slate-500">$1.50 per tree</div>
           </Card>
         </div>

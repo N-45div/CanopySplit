@@ -4,6 +4,7 @@ import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import Landing from '@/pages/Home';
 import AppPage from '@/pages/AppPage';
+import Hooks from '@/pages/Hooks';
 import { Toaster } from '@/components/ui/sonner';
 import './App.css';
 
@@ -26,6 +27,7 @@ function App() {
       <Routes>
         <Route index element={<Landing />} />
         <Route path="app" element={<AppPage />} />
+        <Route path="hooks" element={<Hooks />} />
       </Routes>
       <Footer />
       <Toaster />

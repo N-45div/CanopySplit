@@ -80,15 +80,21 @@ export default function AppPage() {
   const { data: keeperAddr } = useReadContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'keeper', args: [] });
   const { data: ownerAddr } = useReadContract({ address: splitterAddr, abi: SplitterABI as any, functionName: 'owner', args: [] });
 
+  // Asset metadata (decimals/symbol) for dynamic formatting
+  const { data: assetDecimals } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'decimals', args: [] });
+  const { data: assetSymbol } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'symbol', args: [] });
+  const dec = typeof assetDecimals === 'number' ? assetDecimals : 18;
+  const symbol = (assetSymbol as string) || 'ASSET';
+
   const isMgmt = !!(account && managementAddr && account.toLowerCase() === (managementAddr as string).toLowerCase());
   const isKeeper = !!(account && keeperAddr && account.toLowerCase() === (keeperAddr as string).toLowerCase());
   const isMgmtOrKeeper = isMgmt || isKeeper;
   const isOwner = !!(account && ownerAddr && account.toLowerCase() === (ownerAddr as string).toLowerCase());
 
-  const estPendingUSDC = (() => {
+  const estPending = (() => {
     if (!pendingShares || !pps) return '0';
     const pv = (pendingShares as bigint) * (pps as bigint) / 10n**18n;
-    return formatUnits(pv, 6);
+    return formatUnits(pv, dec);
   })();
 
   // Logs-based lifetime receipts
@@ -111,8 +117,8 @@ export default function AppPage() {
           // @ts-ignore
           if (l.transactionHash) txs.push(l.transactionHash as string);
         }
-        setLifetimeUsd(Number(formatUnits(total, 6)));
-        setEpochUsd(Number(formatUnits(epochTotal, 6)));
+        setLifetimeUsd(Number(formatUnits(total, dec)));
+        setEpochUsd(Number(formatUnits(epochTotal, dec)));
         setRecentTxs(txs.slice(-3).reverse());
       } catch {
         // ignore for demo
@@ -143,14 +149,14 @@ export default function AppPage() {
       {/* Hero */}
       <section id="hero" className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-5xl font-extrabold tracking-tight md:text-6xl">CanopySplit</h1>
-        <p className="mt-3 text-slate-600 md:text-lg">Turn idle USDC into urban shade. Principal stays yours; yield funds planting, open MRV, and maintenance.</p>
+        <p className="mt-3 text-slate-600 md:text-lg">Turn idle {symbol} into urban shade. Principal stays yours; yield funds planting, open MRV, and maintenance.</p>
       </section>
 
       {/* How it works */}
       <section id="how" className="container mx-auto px-4 py-8">
         <Card className="mx-auto max-w-3xl space-y-3 p-8 text-center">
           <h3 className="text-2xl font-semibold">How it works</h3>
-          <p className="text-slate-600">Deposits earn yield. Profits are minted as shares to the TriSplit splitter, redeemed to USDC, and routed to three recipients by epoch weights.</p>
+          <p className="text-slate-600">Deposits earn yield. Profits are minted as shares to the TriSplit splitter, redeemed to {symbol}, and routed to three recipients by epoch weights.</p>
         </Card>
       </section>
 
@@ -160,14 +166,14 @@ export default function AppPage() {
           <Card className="p-6 text-center">
             <div className="text-sm text-slate-500">Total Assets</div>
             <div className="mt-1 text-3xl font-semibold">
-              {typeof totalAssets === 'bigint' ? formatUnits(totalAssets as bigint, 6) : <Skeleton className="h-7 mx-auto w-24" />}
+              {typeof totalAssets === 'bigint' ? formatUnits(totalAssets as bigint, dec) : <Skeleton className="h-7 mx-auto w-24" />}
             </div>
-            <div className="text-xs text-slate-500">USDC</div>
+            <div className="text-xs text-slate-500">{symbol}</div>
           </Card>
           <Card className="p-6 text-center">
             <div className="text-sm text-slate-500">Pending Donation (est.)</div>
-            <div className="mt-1 text-3xl font-semibold">{(pendingShares && pps) ? estPendingUSDC : <Skeleton className="h-7 mx-auto w-28" />}</div>
-            <div className="text-xs text-slate-500">USDC</div>
+            <div className="mt-1 text-3xl font-semibold">{(pendingShares && pps) ? estPending : <Skeleton className="h-7 mx-auto w-28" />}</div>
+            <div className="text-xs text-slate-500">{symbol}</div>
           </Card>
           <Card className="p-6 text-center">
             <div className="text-sm text-slate-500">Current Epoch</div>
@@ -185,15 +191,16 @@ export default function AppPage() {
           <h3 className="text-2xl font-semibold">Strategy Actions</h3>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-3">
-              <div className="text-muted-foreground">Deposit USDC</div>
-              <input className="w-full rounded border border-gray-300 px-3 py-2" placeholder="Amount (USDC)" value={depositAmt} onChange={(e) => setDepositAmt(e.target.value)} />
+              <div className="text-muted-foreground">Deposit {symbol}</div>
+              <input className="w-full rounded border border-gray-300 px-3 py-2" placeholder={`Amount (${symbol})`} value={depositAmt} onChange={(e) => setDepositAmt(e.target.value)} />
               <Button
                 className="w-full transition-transform duration-150 active:scale-[.98]"
                 disabled={!isConnected || sending || !depositAmt}
                 onClick={async () => {
                   try {
-                    const amt = parseUnits(depositAmt as `${string}` as string, 6);
-                    await writeContract({ address: usdcAddr, abi: ERC20ABI as any, functionName: 'approve', args: [strategyAddr, amt] });
+                    const amt = parseUnits(depositAmt as `${string}` as string, dec);
+                    const ap = await writeContract({ address: usdcAddr, abi: ERC20ABI as any, functionName: 'approve', args: [strategyAddr, amt] });
+                    if (client && (ap as any)) await client.waitForTransactionReceipt({ hash: (ap as any) });
                     const tx = await writeContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'deposit', args: [amt, account!] });
                     notifyTx('Deposited', tx);
                   } catch (e: any) {
@@ -206,13 +213,13 @@ export default function AppPage() {
             </div>
             <div className="space-y-3">
               <div className="text-muted-foreground">Withdraw Assets</div>
-              <input className="w-full rounded border border-gray-300 px-3 py-2" placeholder="Amount (USDC)" value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)} />
+              <input className="w-full rounded border border-gray-300 px-3 py-2" placeholder={`Amount (${symbol})`} value={withdrawAmt} onChange={(e) => setWithdrawAmt(e.target.value)} />
               <Button
                 className="w-full transition-transform duration-150 active:scale-[.98]"
                 disabled={!isConnected || sending || !withdrawAmt}
                 onClick={async () => {
                   try {
-                    const amt = parseUnits(withdrawAmt as `${string}` as string, 6);
+                    const amt = parseUnits(withdrawAmt as `${string}` as string, dec);
                     const tx = await writeContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'withdraw', args: [amt, account!, account!] });
                     notifyTx('Withdrawn', tx);
                   } catch (e: any) {
@@ -238,13 +245,12 @@ export default function AppPage() {
                 onClick={async () => {
                   try {
                     const tx = await writeContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'report', args: [] });
+                    if (client && (tx as any)) await client.waitForTransactionReceipt({ hash: (tx as any) });
                     notifyTx('Reported', tx);
-                    setTimeout(() => {
-                      refetchPending();
-                      refetchEpochWeights();
-                      refetchNextEpochWeights();
-                      setLogsNonce((n) => n + 1);
-                    }, 2500);
+                    refetchPending();
+                    refetchEpochWeights();
+                    refetchNextEpochWeights();
+                    setLogsNonce((n) => n + 1);
                   } catch (e: any) {
                     toast.error(e?.shortMessage || e?.message || 'Report failed');
                   }
@@ -255,15 +261,17 @@ export default function AppPage() {
             </div>
             <div className="space-y-3">
               <div className="text-muted-foreground">Simulate Profit (demo, management only)</div>
-              <input className="w-full rounded border border-gray-300 px-3 py-2" placeholder="Amount (USDC)" value={profitAmt} onChange={(e) => setProfitAmt(e.target.value)} />
+              <input className="w-full rounded border border-gray-300 px-3 py-2" placeholder={`Amount (${symbol})`} value={profitAmt} onChange={(e) => setProfitAmt(e.target.value)} />
               <Button
                 className="w-full transition-transform duration-150 active:scale-[.98]"
                 disabled={!isConnected || sending || !profitAmt || !isMgmt}
                 onClick={async () => {
                   try {
-                    const amt = parseUnits(profitAmt as `${string}` as string, 6);
-                    await writeContract({ address: usdcAddr, abi: ERC20ABI as any, functionName: 'approve', args: [strategyAddr, amt] });
+                    const amt = parseUnits(profitAmt as `${string}` as string, dec);
+                    const ap = await writeContract({ address: usdcAddr, abi: ERC20ABI as any, functionName: 'approve', args: [strategyAddr, amt] });
+                    if (client && (ap as any)) await client.waitForTransactionReceipt({ hash: (ap as any) });
                     const tx = await writeContract({ address: strategyAddr, abi: StrategyExtrasABI as any, functionName: 'simulateProfit', args: [amt] });
+                    if (client && (tx as any)) await client.waitForTransactionReceipt({ hash: (tx as any) });
                     notifyTx('Simulated profit', tx);
                   } catch (e: any) {
                     toast.error(e?.shortMessage || e?.message || 'Simulate failed');
@@ -279,7 +287,7 @@ export default function AppPage() {
 
         <Card className="space-y-4 p-8">
           <h3 className="text-2xl font-semibold">Strategy Status</h3>
-          <div className="grid gap-4 md:grid-cols-3 text-sm">
+          <div className="grid gap-4 md:grid-cols-4 text-sm">
             <div>
               <div className="text-muted-foreground">Strategy</div>
               <div className="font-mono break-all">
@@ -304,7 +312,15 @@ export default function AppPage() {
             </div>
             <div>
               <div className="text-muted-foreground">Total Assets</div>
-              <div className="font-mono">{totalAssets ? formatUnits(totalAssets as bigint, 6) : '0'}</div>
+              <div className="font-mono">{totalAssets ? formatUnits(totalAssets as bigint, dec) : '0'}</div>
+            </div>
+            <div>
+              <div className="text-muted-foreground">Yield Source</div>
+              <div className="font-mono break-all">
+                <a className="text-indigo-600 hover:underline" href={`https://sepolia.etherscan.io/address/${ADDRS.sepolia.aavePool}`} target="_blank" rel="noreferrer">Aave Pool</a>
+                <span className="mx-1">•</span>
+                <a className="text-indigo-600 hover:underline" href={`https://sepolia.etherscan.io/address/${ADDRS.sepolia.aToken}`} target="_blank" rel="noreferrer">ERC‑4626 Vault</a>
+              </div>
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-3 text-sm mt-4">
@@ -368,7 +384,7 @@ export default function AppPage() {
             </div>
             <div>
               <div className="text-sm text-slate-500">Pending Donation (est.)</div>
-              <div className="mt-1 text-3xl font-semibold">{(pendingShares && pps) ? estPendingUSDC : <Skeleton className="h-7 mx-auto w-28" />}</div>
+              <div className="mt-1 text-3xl font-semibold">{(pendingShares && pps) ? estPending : <Skeleton className="h-7 mx-auto w-28" />}</div>
             </div>
           </div>
           <div className="mt-6">
@@ -378,11 +394,10 @@ export default function AppPage() {
               onClick={async () => {
                 try {
                   const tx = await writeContract({ address: splitterAddr, abi: SplitterABI as any, functionName: 'distributeAll', args: [] });
+                  if (client && (tx as any)) await client.waitForTransactionReceipt({ hash: (tx as any) });
                   notifyTx('Distributed', tx);
-                  setTimeout(() => {
-                    refetchPending();
-                    setLogsNonce((n) => n + 1);
-                  }, 2500);
+                  refetchPending();
+                  setLogsNonce((n) => n + 1);
                 } catch (e: any) {
                   toast.error(e?.shortMessage || e?.message || 'Distribution failed');
                 }
@@ -525,13 +540,13 @@ export default function AppPage() {
       <section id="impact" className="container mx-auto px-4 py-10">
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="p-6 text-center">
-            <div className="text-sm text-slate-500">USDC donated this epoch</div>
+            <div className="text-sm text-slate-500">{symbol} donated this epoch</div>
             <div className="mt-1 text-3xl font-semibold">{epochUsd === null ? '...' : (epochUsd || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
             <div className="text-xs text-slate-500">from Distributed logs</div>
           </Card>
           <Card className="p-6 text-center">
             <div className="text-sm text-slate-500">Trees this epoch (est.)</div>
-            <div className="mt-1 text-3xl font-semibold">{Math.floor(Number(estPendingUSDC) / 1.5) || 0}</div>
+            <div className="mt-1 text-3xl font-semibold">{Math.floor(Number(estPending) / 1.5) || 0}</div>
             <div className="text-xs text-slate-500">$1.50 per tree</div>
           </Card>
           <Card className="p-6 text-center">

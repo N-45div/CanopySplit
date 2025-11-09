@@ -7,6 +7,7 @@ import SplitterABI from '@/abis/TriSplitDonationSplitter.json';
 import StrategyABI from '@/abis/YieldDonatingTokenizedStrategy.json';
 import { formatUnits } from 'viem';
 import { toast } from 'sonner';
+import ERC20ABI from '@/abis/ERC20.json';
 
 export default function SplitterPage() {
   const splitterAddr = ADDRS.sepolia.splitter as `0x${string}`;
@@ -41,17 +42,24 @@ export default function SplitterPage() {
 
   const { writeContract, isPending } = useWriteContract();
 
-  const estPendingUSDC = (() => {
+  // Asset metadata
+  const { data: assetAddress } = useReadContract({ address: strategyAddr, abi: StrategyABI as any, functionName: 'asset', args: [] });
+  const { data: assetDecimals } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'decimals', args: [] });
+  const { data: assetSymbol } = useReadContract({ address: assetAddress as any, abi: ERC20ABI as any, functionName: 'symbol', args: [] });
+  const dec = typeof assetDecimals === 'number' ? assetDecimals : 18;
+  const symbol = (assetSymbol as string) || 'ASSET';
+
+  const estPending = (() => {
     if (!pendingShares || !pps) return '0';
     const pv = (pendingShares as bigint) * (pps as bigint) / 10n**18n;
-    return formatUnits(pv, 6);
+    return formatUnits(pv, dec);
   })();
 
   return (
     <div className="container mx-auto min-h-[calc(100vh-56px-88px)] space-y-10 px-4 py-10">
       <section>
         <h1 className="text-4xl font-bold">TriSplit Splitter</h1>
-        <p className="text-slate-600">Redeem donated shares and route USDC to 3 recipients by epoch weights.</p>
+        <p className="text-slate-600">Redeem donated shares and route {symbol} to 3 recipients by epoch weights.</p>
       </section>
 
       <section className="space-y-6">
@@ -67,7 +75,7 @@ export default function SplitterPage() {
             </div>
             <div>
               <div className="text-sm text-slate-500">Pending Donation (est.)</div>
-              <div className="mt-1 text-3xl font-semibold">{estPendingUSDC}</div>
+              <div className="mt-1 text-3xl font-semibold">{estPending}</div>
             </div>
           </div>
           <div className="mt-6">

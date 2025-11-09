@@ -1,19 +1,15 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Button } from '@/components/ui/button';
-import { useAccount, useDisconnect } from 'wagmi';
 
 export default function NavBar() {
   const { pathname, hash } = useLocation();
-  const { isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
 
   const linkBase = 'text-sm font-medium text-slate-600 hover:text-slate-900 transition';
   const isActive = (targetHash: string) => pathname === '/app' && hash === targetHash;
   const active = 'text-slate-900 underline underline-offset-8';
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl font-bold">CanopySplit</span>
@@ -24,12 +20,10 @@ export default function NavBar() {
           <Link to="/app#splitter" className={`${linkBase} ${isActive('#splitter') ? active : ''}`}>Splitter</Link>
           <Link to="/app#impact" className={`${linkBase} ${isActive('#impact') ? active : ''}`}>Impact</Link>
           <Link to="/app#faq" className={`${linkBase} ${isActive('#faq') ? active : ''}`}>FAQ</Link>
+          <Link to="/hooks" className={`${linkBase}`}>Hooks</Link>
         </nav>
         <div className="flex items-center gap-2">
-          <ConnectButton chainStatus="icon" showBalance={false} />
-          {isConnected && (
-            <Button variant="outline" size="sm" onClick={() => disconnect()}>Disconnect</Button>
-          )}
+          <ConnectButton chainStatus="icon" showBalance={false} accountStatus="address" />
         </div>
       </div>
     </header>
