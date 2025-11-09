@@ -534,3 +534,6 @@ cd frontend && npm install && npm run dev
   - Re-run `EnsureInitialized` to reset price to 1:1; or
   - Temporarily flip `zeroForOne` to `false` in `script/03_Swap.s.sol` for one swap to move price away from the edge, then switch back.
 
+## License
+
+MIT
