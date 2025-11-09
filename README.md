@@ -1,10 +1,10 @@
 # CanopySplit
 
-Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets you deposit USDC into yield-generating strategies and automatically splits the profits among climate impact recipients.
+Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets you deposit an ERC-20 ASSET (e.g., USDC) into yield-generating strategies and automatically splits the profits among climate impact recipients.
 
 ## What it does
 
-- Deposit USDC and earn yield from Aave v3
+- Deposit ASSET (ERC-20) and earn yield from Aave v3
 - Keep 100% of your principal
 - All profits go to climate projects (tree planting, monitoring, maintenance)
 - Transparent on-chain distribution with customizable epoch-based splits
@@ -15,7 +15,7 @@ Donate your yield, keep your principal. CanopySplit is a DeFi protocol that lets
 **Main Contracts**
 - Aave Strategy: `0x99D8C89E43AA7Cf4628D6F496Ba749D077f78A8B`
 - Splitter: `0xe1F4d6b65e37282D5E1d9e5e9bbd3b0F27683eea`
-- USDC: `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
+- Asset (USDC on Sepolia): `0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238`
 
 **Climate Recipients**
 - Planters: `0xF9b2eFCAcc1B93c1bd7F898d0a8c4b34aBD78E53` (50%)
@@ -33,11 +33,11 @@ flowchart TD
     end
 
     subgraph OnChain["On-chain (Sepolia)"]
-        USDC["USDC Token<br/>0x1c7D...7238"]
+        ASSET["ASSET Token<br/>0x1c7D...7238"]
         STR["YieldDonatingStrategy<br/>0x99D8...8A8B"]
         SPL["TriSplitDonationSplitter<br/>0xe1F4...eea"]
 
-        USDC --> STR
+        ASSET --> STR
         STR -- "yield/harvest" --> SPL
         SPL --> P["Planters<br/>0xF9b2...8E53"]
         SPL --> M["MRV<br/>0x9261...ecc6"]
@@ -134,11 +134,12 @@ For deployment, copy `.env.example` to `.env` and configure your keys.
 - **Role-gated actions**: Different controls for users vs admins
 - **Real-time updates**: Live metrics and event feeds
 - **Wallet integration**: RainbowKit with Sepolia support
+- **Dynamic asset detection**: Frontend reads `asset()` from the strategy (no hardcoded token address)
 
 ## Integrations
 
 ### Aave v3
-- Uses Aave's ERC-4626 ATokenVault for USDC
+- Uses Aave's ERC-4626 ATokenVault for the configured ASSET (USDC on Sepolia)
 - Automatic yield accrual through aTokens
 - Safety checks for supply caps and liquidity
 
