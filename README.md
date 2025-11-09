@@ -32,7 +32,7 @@ Follow these steps to see live donation events in the UI from a local v4 hook.
 ```bash
 export RPC=http://127.0.0.1:8545
 export SENDER=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+export PRIVATE_KEY=
 export TOKEN0_ADDR=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48  # USDC
 export TOKEN1_ADDR=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2  # WETH
 export DONATION_TARGET=$SENDER
@@ -488,51 +488,6 @@ Start a local Anvil node (port 8545) and keep it running in a separate terminal:
 ```bash
 anvil --port 8545
 ```
-
-Deploy v4 core (prints addresses):
-forge script script/testing/00_DeployV4.s.sol:DeployLocalV4 --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-Export the printed addresses:
-export PERMIT2_ADDR=0x000000000022D473030F116dDEE9F6B43aC78BA3
-export POOL_MANAGER_ADDR=0x0D9BAf34817Fccd3b3068768E5d20542B66424A5
-export POSITION_MANAGER_ADDR=0x90aAE8e3C8dF1d226431D0C2C7feAaa775fAF86C
-export SWAP_ROUTER_ADDR=0xB61598fa7E856D43384A8fcBBAbF2Aa6aa044FfC
-
-Deploy the hook for this PoolManager:
-forge script script/00_DeployHook.s.sol:DeployHookScript --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-export HOOK_ADDR=<printed_hook>
-
-# Patch tokens (Anvil only)
-forge script script/testing/01_PatchTokens.s.sol:PatchTokens --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-# Optional if USDC needs to be token0 with 6 decimals
-forge script script/testing/02b_PatchUSDC6_Token0.s.sol:PatchUSDC6_Token0 --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-# Initialize pool if needed
-forge script script/05_EnsureInitialized.s.sol:EnsureInitialized --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-# Add liquidity
-forge script script/02_AddLiquidity.s.sol:AddLiquidityScript --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-# Configure hook
-forge script script/04_SetHookConfig.s.sol:SetHookConfigScript --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-# Prefund the hook with token0 (USDC) so DonationExecuted events are emitted in this PoC
-cast send $TOKEN0_ADDR "transfer(address,uint256)(bool)" $HOOK_ADDR 10000000 \
-  --rpc-url $RPC --private-key $PRIVATE_KEY  # 10 USDC (6 decimals)
-
-# Swap (USDC -> WETH, triggers donation)
-forge script script/03_Swap.s.sol:SwapScript --rpc-url $RPC --broadcast --sender $SENDER --private-key $PRIVATE_KEY
-
-# View in UI
-cd frontend && npm install && npm run dev
-# Open http://localhost:5173/hooks, enter RPC http://127.0.0.1:8545 and your HOOK_ADDR, then click "Load".
-
-### Troubleshooting
-- If swap reverts with custom error 0x7c9c6e8f (PriceLimitAlreadyExceeded), either:
-  - Re-run `EnsureInitialized` to reset price to 1:1; or
-  - Temporarily flip `zeroForOne` to `false` in `script/03_Swap.s.sol` for one swap to move price away from the edge, then switch back.
 
 ## License
 
