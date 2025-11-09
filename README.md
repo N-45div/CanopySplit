@@ -481,30 +481,7 @@ admin.transferOwnership(address(0))  # Disallowed by OpenZeppelin
 4. **Dynamic asset detection** - Read `asset()` and `decimals()` from contracts, never hardcode
 5. **One splitter per strategy** - Avoid "vault already set" by deploying fresh splitters
 
-## License
-
-MIT
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Env
-export RPC=http://127.0.0.1:8545
-export SENDER=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-export PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-export TOKEN0_ADDR=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-export TOKEN1_ADDR=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
-export DONATION_TARGET=$SENDER
-export DONATION_BPS=100 
+# Local Testing of Uniswap V4 hook
 
 Start a local Anvil node (port 8545) and keep it running in a separate terminal:
 
@@ -556,3 +533,4 @@ cd frontend && npm install && npm run dev
 - If swap reverts with custom error 0x7c9c6e8f (PriceLimitAlreadyExceeded), either:
   - Re-run `EnsureInitialized` to reset price to 1:1; or
   - Temporarily flip `zeroForOne` to `false` in `script/03_Swap.s.sol` for one swap to move price away from the edge, then switch back.
+
